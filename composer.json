@@ -17,6 +17,8 @@
         "psr-4": {
             "SamIT\\Yii2\\" : "src/"
         }
+    },
+    "extra": {
+      "bootstrap": "SamIT\\Yii2\\Bootstrap\\CsvResponseFormatter"
     }
-    ""
 }
