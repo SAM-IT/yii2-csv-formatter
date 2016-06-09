@@ -1,0 +1,22 @@
+{
+    "name": "sam-it/yii2-csv-formatter",
+    "description": "Yii2 CSV Response Formatter",
+    "type": "yii2-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sam Mousa",
+            "email": "sam@mousa.nl"
+        }
+    ],
+    "require": {
+        "php" : "^5.5 || ^7.0",
+        "yiisoft/yii2" : "^2.0.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "SamIT\\Yii2\\" : "src/"
+        }
+    }
+    ""
+}
