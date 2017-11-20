@@ -6,12 +6,16 @@
     "authors": [
         {
             "name": "Sam Mousa",
-            "email": "sam@mousa.nl"
+            "email": "sam@mousa.nl",
+        },
+        {
+            "name": "Joey Claessen",
+            "email": "joey_claessen@hotmail.com"
         }
     ],
     "require": {
         "php" : "^5.5 || ^7.0",
-        "yiisoft/yii2" : "^2.0.8"
+        "yiisoft/yii2" : "^2"
     },
     "autoload": {
         "psr-4": {

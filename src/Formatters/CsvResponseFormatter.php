@@ -5,6 +5,8 @@ use yii\base\Arrayable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
+use yii\web\ResponseFormatterInterface;
+
 /**
  * CsvResponseFormatter formats the given data into CSV response content.
  *
@@ -133,14 +135,8 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
      */
     protected function put($handle, array $data)
     {
-        if (PHP_VERSION_ID > 50504) {
-            if (fputcsv($handle, $data, $this->delimiter, $this->enclosure, $this->escape) === false) {
-                throw new \RuntimeException("Failed to write CSV data.");
-            }
-        } else {
-            if (fputcsv($handle, $data, $this->delimiter, $this->enclosure) === false) {
-                throw new \RuntimeException("Failed to write CSV data.");
-            }
+        if (fputcsv($handle, $data, $this->delimiter, $this->enclosure, $this->escape) === false) {
+            throw new \RuntimeException("Failed to write CSV data.");
         }
     }
 }

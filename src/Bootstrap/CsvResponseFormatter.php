@@ -15,7 +15,9 @@ class CsvResponseFormatter implements BootstrapInterface
     public function bootstrap($app)
     {
         if ($app instanceof \yii\web\Application) {
-            $app->getResponse()->formatters[self::FORMAT_CSV] = \SamIT\Yii2\Formatters\CsvResponseFormatter::class;
+            $responseConfig = $app->getComponents()['response'];
+            $responseConfig['formatters'][self::FORMAT_CSV] = \SamIT\Yii2\Formatters\CsvResponseFormatter::class;
+            $app->set('response', $responseConfig);
         }
     }
 }
