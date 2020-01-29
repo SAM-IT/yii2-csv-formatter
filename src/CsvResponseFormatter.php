@@ -79,7 +79,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
     }
 
 
-    private function writeData(Response $response, $handle)
+    private function writeData(Response $response, $handle, array $columns)
     {
         foreach($response->data as $row) {
 
@@ -87,18 +87,12 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
                 $row = $row->toArray();
             }
             $rowData = [];
-            if (isset($columns)) {
                 // Map columns.
-                foreach($columns as $column) {
-                    if (array_key_exists($column, $row)) {
-                        $rowData[] = $row[$column] ?? $this->nullValue;
-                    } else {
-                        $rowData[] = $this->missingValue;
-                    }
-                }
-            } else {
-                foreach($row as $column => $value) {
-                    $rowData[] = $value ?? $this->nullValue;
+            foreach($columns as $column) {
+                if (array_key_exists($column, $row)) {
+                    $rowData[] = $row[$column] ?? $this->nullValue;
+                } else {
+                    $rowData[] = $this->missingValue;
                 }
             }
             $this->put($handle, $rowData);
