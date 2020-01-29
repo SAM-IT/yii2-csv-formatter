@@ -1,31 +1,27 @@
 <?php
-namespace SamIT\Yii2\Formatters;
+namespace SamIT\Yii2;
 
 use yii\base\Arrayable;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
-use yii\helpers\ArrayHelper;
+use yii\web\Response;
 use yii\web\ResponseFormatterInterface;
+
 
 /**
  * CsvResponseFormatter formats the given data into CSV response content.
  *
  * It is used by [[Response]] to format response data.
- *
- * @author Sam Mousa <sam@mousa.nl>
  */
 class CsvResponseFormatter extends Component implements ResponseFormatterInterface
 {
+    public const FORMAT_CSV = 'csv';
     /**
      * @var int Maximum number of bytes to use in memory before using a temp file. Defaults to 20MB
      */
     public $maxMemory = 20971520;
+
     /**
-     * @var string the Content-Type header for the response
-     */
-    public $contentType = 'text/csv';
-    /**
-     * @var boolean Whether to include column names as the first line, if data is associative.
+     * @var boolean Whether to include column names as the first line.
      */
     public $includeColumnNames = true;
     /**
@@ -56,37 +52,37 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
      * @var string The value to use for missing columns (only applicable if `$checkAllRows` is true)
      */
     public $missingValue = "(missing)";
+
     /**
      * Formats the specified response.
      * @param Response $response the response to be formatted.
      * @throws \RuntimeException
+     * @return void
      */
-    public function format($response)
+    public function format($response): void
     {
         $response->getHeaders()->set('Content-Type', 'text/csv; charset=UTF-8');
         $handle = fopen('php://temp/maxmemory:' . intval($this->maxMemory), 'w+');
         $response->stream = $handle;
 
-        if ($this->includeColumnNames && $this->checkAllRows) {
-            $columns = $this->getColumnNames($response->data);
-            if (empty($columns)) { return; }
-            $outputHeader = false;
+        if (!is_iterable($response->data)) {
+            throw new \InvalidArgumentException('Response data must be iterable');
+        }
+
+        if ($this->includeColumnNames) {
+            $columns = $this->getColumnNames($response->data, $this->checkAllRows);
             $this->put($handle, $columns);
-        } else {
-            $outputHeader = true;
         }
-        if (!$response->data instanceof \Traversable && !is_array($response->data)) {
-            throw new \InvalidArgumentException('Response data must be traversable.');
-        }
+
+        $this->writeData($response, $handle);
+        rewind($handle);
+    }
+
+
+    private function writeData(Response $response, $handle)
+    {
         foreach($response->data as $row) {
-            if($outputHeader
-                && $this->includeColumnNames
-                && !$this->checkAllRows
-                && \yii\helpers\ArrayHelper::isAssociative($row)
-            ) {
-                $this->put($handle, array_keys($row));
-                $outputHeader = false;
-            }
+
             if ($row instanceof Arrayable) {
                 $row = $row->toArray();
             }
@@ -95,48 +91,50 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
                 // Map columns.
                 foreach($columns as $column) {
                     if (array_key_exists($column, $row)) {
-                        $rowData[] = isset($row[$column]) ? $row[$column] : $this->nullValue;
+                        $rowData[] = $row[$column] ?? $this->nullValue;
                     } else {
                         $rowData[] = $this->missingValue;
                     }
                 }
             } else {
                 foreach($row as $column => $value) {
-                    $rowData[] = isset($value) ? $value : $this->nullValue;
+                    $rowData[] = $value ?? $this->nullValue;
                 }
             }
             $this->put($handle, $rowData);
         }
-        rewind($handle);
     }
+
     /**
-     * @param array|Traversable $data The data set
-     * @return array The column names found in the data
+     * @param iterable $data The data set
+     * @return string[] The column names found in the data
      */
-    protected function getColumnNames($data)
+    protected function getColumnNames(iterable $data, bool $checkAllRows): array
     {
         $columns = [];
         // Use foreach to support arrays and traversable objects.
         foreach($data as $row) {
             foreach($row as $column => $value) {
                 if (is_int($column)) {
-                    throw new InvalidConfigException('You should not use $checkAllRows in combination with non-associative rows.');
+                    throw new \RuntimeException('You cannot use $checkAllRows in combination with non-associative rows.');
                 }
                 $columns[$column] = true;
             }
+            if (!$checkAllRows) break;
         }
         return array_keys($columns);
     }
+
     /**
      * Writes a line of CSV data using configuration from the formatter.
-     * @param $handle The file handle write to
+     * @param resource $handle The file handle write to
      * @param array $data The data to write
      * @throws \RuntimeException In case CSV data fails to write.
      */
-    protected function put($handle, array $data)
+    protected function put($handle, array $data): void
     {
         if (fputcsv($handle, $data, $this->delimiter, $this->enclosure, $this->escape) === false) {
-            throw new \RuntimeException("Failed to write CSV data.");
+            throw new \RuntimeException("Failed to write CSV data");
         }
     }
 }

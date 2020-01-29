@@ -1,7 +1,7 @@
 {
     "name": "sam-it/yii2-csv-formatter",
     "description": "Yii2 CSV Response Formatter",
-    "type": "yii2-extension",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -14,15 +14,12 @@
         }
     ],
     "require": {
-        "php" : "^5.5 || ^7.0",
-        "yiisoft/yii2" : "^2"
+        "php" : "> 7.3",
+        "yiisoft/yii2" : "> 2"
     },
     "autoload": {
         "psr-4": {
             "SamIT\\Yii2\\" : "src/"
         }
-    },
-    "extra": {
-      "bootstrap": "SamIT\\Yii2\\Bootstrap\\CsvResponseFormatter"
     }
 }
