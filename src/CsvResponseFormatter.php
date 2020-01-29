@@ -74,7 +74,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
             $this->put($handle, $columns);
         }
 
-        $this->writeData($response, $handle);
+        $this->writeData($response, $handle, $columns);
         rewind($handle);
     }
 
